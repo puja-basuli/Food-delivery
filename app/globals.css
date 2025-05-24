@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+
+
+input[type="email"],
+input[type="password"],
+input[type="text"]{
+  @apply w-full block my-4 rounded-xl;
+@apply border p-2 border-gray-300 bg-gray-200;
+
+}
+
+
+input[type="email"]:disabled,
+input[type="password"]:disabled,
+input[type="text"]:disabled{
+  @apply w-full block my-4 rounded-xl;
+@apply border p-2 border-gray-300 bg-gray-400;
+
+}
+button[type="submit"]:disabled{
+  @apply block w-full text-gray-600 font-semibold;
+  @apply border border-gray-300 rounded-xl px-6 py-2 bg-blue-300;
+}
+button[type="submit"]{
+  @apply block w-full text-gray-600 font-semibold;
+  @apply border border-gray-300 rounded-xl px-6 py-2;
+}
+button[type="submit"], .submit{
+@apply border-0 bg-blue-600 text-white;
+}
+
