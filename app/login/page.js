@@ -7,11 +7,23 @@ import "react-toastify/dist/ReactToastify.css";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
+  const router = useRouter();
+   const { data: session,status } = useSession(); 
+      if(status=== 'loading'){
+          return 'LOADING...'
+      }
+      if(status==='authenticated'){
+          router.push('/profile');
+        return null;
+      }
 
   const notify = () => toast.success("Login successful!");
 
@@ -31,7 +43,7 @@ export default function LoginPage() {
     } else {
       notify();
       setTimeout(() => {
-        window.location.href = "/dashboard";
+        window.location.href = "/profile";
       }, 2000);
     }
 
@@ -39,8 +51,10 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="mt-8">
-      <h1 className="text-center text-blue-600 text-4xl">Login</h1>
+    <div className="h-186 flex justify-center bg-gray-950 p-0 m-0 rounded-xl">
+      <div className=" w-128 h-128 mt-5 p-10 ">
+    <section className="mt-8 bg-gray-900 p-10 rounded-xl ">
+      <h1 className="text-center gradient-t text-4xl">Login</h1>
 
       <ToastContainer />
 
@@ -83,5 +97,7 @@ export default function LoginPage() {
         </div>
       </form>
     </section>
+     </div>
+    </div>
   );
 }

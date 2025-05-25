@@ -15,7 +15,7 @@ input[type="email"]:disabled,
 input[type="password"]:disabled,
 input[type="text"]:disabled{
   @apply w-full block my-4 rounded-xl;
-@apply border p-2 border-gray-300 bg-gray-400;
+@apply border p-2 border-gray-400 bg-gray-300 text-gray-700 cursor-not-allowed;
 
 }
 button[type="submit"]:disabled{
@@ -30,3 +30,52 @@ button[type="submit"], .submit{
 @apply border-0 bg-blue-600 text-white;
 }
 
+.gradient-t {
+  @apply bg-gradient-to-r from-blue-400 to-white bg-clip-text text-transparent;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 3px dotted #b9c9fd;
+  border-style: solid solid dotted dotted;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  animation: rotation 2s linear infinite;
+}
+.loader::after {
+  content: '';  
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  border: 3px dotted #00ff04;
+  border-style: solid solid dotted;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  animation: rotationBack 1s linear infinite;
+  transform-origin: center center;
+}
+    
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+} 
+@keyframes rotationBack {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+} 

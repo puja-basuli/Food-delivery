@@ -1,16 +1,32 @@
 "use client";
+
 import { useState } from "react";
+
+
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
  import { ToastContainer, toast } from 'react-toastify';
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 export default function RegisterPage() {
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [creatingUser, setCreatingUser] = useState(false);
   const [userCreated, setUserCreated] = useState(false);
   const notify = () => toast("Registration successful");
+     const router = useRouter();
+
+   const { data: session,status } = useSession(); 
+      if(status=== 'loading'){
+          return 'LOADING...'
+      }
+      if(status==='authenticated'){
+         router.push('/profile');
+        return null;
+      }
 
   async function handleFormSubmit(ev) {
     ev.preventDefault();
@@ -43,8 +59,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <section className="mt-8">
-      <h1 className="text-center text-blue-600 text-4xl">Register</h1>
+    <div className="h-186 flex justify-center bg-gray-950 p-0 m-0 rounded-xl">
+      <div className=" w-128 h-128 mt-5 p-10 ">
+    <section className="mt-8 bg-gray-900 p-10 rounded-xl ">
+      <h1 className="text-center gradient-t text-4xl">Register</h1>
 
       {userCreated && (
         <div className="text-green-500 mt-2 text-center">
@@ -53,7 +71,9 @@ export default function RegisterPage() {
         </div>
       )}
 <ToastContainer/>
+
       <form className="block max-w-sm mx-auto" onSubmit={handleFormSubmit}>
+       
         <input
           type="email"
           placeholder="Email"
@@ -103,5 +123,7 @@ export default function RegisterPage() {
         </div>
       </form>
     </section>
+    </div>
+    </div>
   );
 }

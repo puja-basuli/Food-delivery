@@ -1,28 +1,27 @@
 import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import GoogleProvider from "next-auth/providers/google"
-
-import { PrismaAdapter } from "@auth/prisma-adapter"
 
 const prisma = new PrismaClient();
-
-const handler = NextAuth({
+export const authOptions ={
   adapter: PrismaAdapter(prisma),
   providers: [
-    
-  GoogleProvider({
-    clientId: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    allowDangerousEmailAccountLinking: true,
-  }),
+    // Google OAuth Provider
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
+    }),
 
+    // Credentials Provider
     CredentialsProvider({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email", placeholder: "you@example.com" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         const { email, password } = credentials;
@@ -37,8 +36,11 @@ const handler = NextAuth({
           throw new Error("No user found with this email");
         }
 
-        const isValid = await bcrypt.compare(password, user.password);
+        if (!user.password) {
+          throw new Error("Please login with Google.");
+        }
 
+        const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
           throw new Error("Invalid password");
         }
@@ -46,40 +48,84 @@ const handler = NextAuth({
         return {
           id: user.id,
           name: user.name,
-          email: user.email
+          email: user.email,
         };
-      }
-    })
+      },
+    }),
   ],
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
   },
   pages: {
-    signIn: '/login'
+    signIn: "/login",
+    error: "/login", // handles error redirection
   },
   callbacks: {
-  async signIn({ user, account }) {
-    if (account.provider === 'google') {
-      // Check if user exists
-      let existingUser = await prisma.user.findUnique({
-        where: { email: user.email }
-      });
-      if (!existingUser) {
-        // Create user if not exists
-        existingUser = await prisma.user.create({
-          data: {
-            name: user.name,
-            email: user.email,
-            image: user.image,
-          },
+   
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+          include: { accounts: true },
         });
-      }
-      user.id = existingUser.id;
-    }
-    return true;
-  }
-},
-  secret: process.env.NEXTAUTH_SECRET
-});
 
-export { handler as GET, handler as POST };
+        if (!existingUser) {
+          // Create new user with linked Google account
+          await prisma.user.create({
+            data: {
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              accounts: {
+                create: {
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  type: account.type,
+                  access_token: account.access_token,
+                  id_token: account.id_token,
+                },
+              },
+            },
+          });
+        } else {
+          const alreadyLinked = existingUser.accounts.some(
+            (acc) =>
+              acc.provider === account.provider &&
+              acc.providerAccountId === account.providerAccountId
+          );
+
+          if (!alreadyLinked) {
+            await prisma.account.create({
+              data: {
+                userId: existingUser.id,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                type: account.type,
+                access_token: account.access_token,
+                id_token: account.id_token,
+              },
+            });
+          }
+        }
+      }
+
+      return true;
+    },
+
+    async redirect({ url, baseUrl }) {
+      return url.startsWith(baseUrl) ? url : baseUrl;
+    },
+  },
+   async session({ session, user }) {
+    if (user.image) {
+      session.user.image = `/uploads/${user.image}`; // or full URL if stored so
+    } else {
+      session.user.image = '/default-avatar.png'; // fallback image
+    }
+    return session;
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+}
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST , handler as PUT};

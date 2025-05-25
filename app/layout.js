@@ -17,12 +17,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={roboto.variable}>
       <body className="antialiased">
-        <main className="max-w-8xl mx-auto p-4 bg-gray-900">
+        <main className="max-w-8xl mx-auto p-4 bg-gray-900 ">
           <AppProvider>
           <Header />
         {children}
 
-         <footer className="border-t mt-10 p-8 text-center text-gray-500">
+         <footer className="border-t mt-10 p-8 text-center text-gray-200">
         &copy; 2025 All rights reserved
       </footer>
       </AppProvider>
