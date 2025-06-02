@@ -8,16 +8,24 @@ generator client {
   provider = "prisma-client-js"
 }
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  image         String
-  emailVerified DateTime?
-  image         String?
-  password      String?   // Add this if using credentials
-  accounts      Account[]
-  sessions      Session[]
+  id             String    @id @default(uuid())
+  email          String?   @unique
+  name           String?
+  image          String?
+  house          String?
+  city           String?
+  pincode        String?
+  country        String?
+  dob            DateTime?
+  phone          String?
+  admin          Boolean  @default(false)
+  emailVerified  DateTime?
+  password       String?
+  accounts       Account[]
+  sessions       Session[]
 }
+
+
 
 
 model Account {
